@@ -1,5 +1,5 @@
 <?php
-namespace Ribase\Console\Command;
+namespace Ribase\RibaseConsole\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
