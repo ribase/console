@@ -1,0 +1,19 @@
+{
+    "name": "ribase/ribase-console",
+    "type": "typo3-cms-extension",
+    "description": "A console for Typo3, using the internal SFConsole",
+    "authors": [
+        {
+            "name": "Sebastian Thadewald",
+            "role": "Product Manager"
+        }
+    ],
+    "require": {
+        "typo3/cms-core": "^8.7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ribase\\RibaseConsole\\": "Classes"
+        }
+    }
+}

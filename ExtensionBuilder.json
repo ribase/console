@@ -1,0 +1,39 @@
+{
+    "modules": [],
+    "properties": {
+        "backendModules": [],
+        "description": "A console for Typo3, using the internal SFConsole",
+        "emConf": {
+            "category": "plugin",
+            "custom_category": "",
+            "dependsOn": "typo3 => 8.7.0-8.7.99\n",
+            "disableLocalization": false,
+            "disableVersioning": false,
+            "skipGenerateDocumentationTemplate": false,
+            "sourceLanguage": "en",
+            "state": "alpha",
+            "targetVersion": "8.7.0-8.7.99",
+            "version": "1.0.0"
+        },
+        "extensionKey": "ribase_console",
+        "name": "Ribase Console",
+        "originalExtensionKey": "",
+        "originalVendorName": "",
+        "persons": [
+            {
+                "company": "",
+                "email": "sthadewald@gmail.com",
+                "name": "Sebastian Thadewald",
+                "role": "Product Manager"
+            }
+        ],
+        "plugins": [],
+        "vendorName": "Ribase"
+    },
+    "wires": [],
+    "log": {
+        "last_modified": "2018-08-03 09:21",
+        "extension_builder_version": "8.7.0",
+        "be_user": " (1)"
+    }
+}
