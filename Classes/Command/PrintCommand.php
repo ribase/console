@@ -20,6 +20,7 @@ class PrintCommand extends Command
         $words = array('Hello', 'How are you?', 'Nice to meet you');
         $output->writeln($words[array_rand($words, 1)]);
 
-        return 0; // everything fine
+        return 0;
+
     }
 }
