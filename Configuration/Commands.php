@@ -1,6 +1,6 @@
 <?php
 return [
     'print:something' => [
-        'class' => \Ribase\Command\PrintCommand::class
+        'class' => Ribase\Console\Command\PrintCommand::class
     ]
 ];
