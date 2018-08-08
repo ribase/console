@@ -14,5 +14,8 @@ return [
     ],
     'install' => [
         'class' => Ribase\RibaseConsole\Command\InstallCommand::class
+    ],
+    'database' => [
+        'class' => Ribase\RibaseConsole\Command\DatabaseCommand::class
     ]
 ];

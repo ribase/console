@@ -54,7 +54,7 @@ class InstallCommand extends Command
         $this->objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
 
         switch ($action) {
-            case "createPackageStates":
+            case "update":
 
                 $manager = $this->objectManager->get(PackageManager::class);
 
@@ -67,7 +67,18 @@ class InstallCommand extends Command
 
 
                 break;
-            case "size":
+            case "create":
+                /** @var \TYPO3\CMS\Core\Package\FailsafePackageManager $packageManager */
+                $packageManager = \TYPO3\CMS\Core\Core\Bootstrap::getInstance()->getEarlyInstance(\TYPO3\CMS\Core\Package\PackageManager::class);
+
+                // Activate all packages required for a minimal usable system
+                $packages = $packageManager->getAvailablePackages();
+                foreach ($packages as $package) {
+                    /** @var $package \TYPO3\CMS\Core\Package\PackageInterface */
+                    if ($package instanceof \TYPO3\CMS\Core\Package\PackageInterface && $package->getPackageKey() != 'sys_action') {
+                        $packageManager->activatePackage($package->getPackageKey());
+                    }
+                }
 
                 break;
         }
