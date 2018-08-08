@@ -9,7 +9,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Yaml;
 
-class InitCommand extends Command
+class InitAliasCommand extends Command
 {
 
     protected $filename = PATH_site.'../configs/console/aliases.yml';
@@ -126,11 +126,11 @@ class InitCommand extends Command
         }
 
         $alias = [
-          'name' =>   '@'.$aliasName,
-          'path' =>   $aliasPath,
-          'type' =>   $aliasType,
-          'user' =>   $userSSH,
-          'server' => $serverName
+            'name' =>   '@'.$aliasName,
+            'pathInternal' =>   $aliasPath,
+            'type' =>   $aliasType,
+            'user' =>   $userSSH,
+            'server' => $serverName
         ];
 
         $aliasArray[$aliasName] = $alias;
