@@ -43,9 +43,12 @@ class DatabaseCommand extends Command
         $from = $input->getArgument('from');
         $to = $input->getArgument('to');
 
+        $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
 
         $fromServer = $this->getServer($from, $contents);
         $toServer = $this->getServer($to, $contents);
+        $fromServerRsync = $this->getServerRsync($from, $contents);
+        $toServerRsync = $this->getServerRsync($to, $contents);
         $filename = str_replace('@', '', $from);
 
         switch ($action) {
@@ -61,9 +64,7 @@ class DatabaseCommand extends Command
                     return 500;
                 }
 
-                $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
-
-                if(strpos($fromServer, 'ssh')){
+                if(strpos($fromServer, '@')){
                     exec('ssh '.$fromServer.' "mysqldump -u'.$credentials['user'].'-h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump"');
                 }else {
                     exec('cd '.PATH_site.'; mysqldump -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump');
@@ -71,13 +72,11 @@ class DatabaseCommand extends Command
 
                 break;
             case "dumpthis":
-                $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
 
                 exec('mysqldump -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump');
 
                 break;
             case "importthis":
-                $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
                 exec('mysql -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' < '.$filename.'.dump');
 
                 break;
@@ -87,7 +86,7 @@ class DatabaseCommand extends Command
                     return 500;
                 }
 
-                if(strpos($fromServer, 'ssh')) {
+                if(strpos($fromServer, '@')) {
                     $deleteFile = '--remove-source-files';
                 }else {
                     $deleteFile = '';
@@ -95,23 +94,32 @@ class DatabaseCommand extends Command
 
                 $output->writeln('<comment>exporting database on '.$from.'</comment>');
 
-                if(strpos($fromServer, 'ssh')){
-                    exec('ssh '.$fromServer.' ../vendor/bin/typo3 dumpthis '.$from);
+                if(strpos($fromServer, '@')){
+                    exec('ssh '.$fromServer.'../vendor/bin/typo3 dumpthis '.$from, $out, $err);
                 }else {
-                    exec('../vendor/bin/typo3 database dumpthis '.$from);
+                    exec('../vendor/bin/typo3 database dumpthis '.$from, $out, $err);
                 }
+
+                if($err == 1) {
+                    $output->writeln('<error>'.$out.'</error>');
+                    return 500;
+                }
+
 
                 $output->writeln('<comment>sync database from '.$from.' to '.$to.'</comment>');
 
-                exec('rsync -chavzP '.$deleteFile.' --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.$filename.'.dump '.$toServer.$filename.'.dump');
+                exec('rsync -chavzP '.$deleteFile.' --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServerRsync.$filename.'.dump '.$toServerRsync.$filename.'.dump');
 
 
                 $output->writeln('<comment>importing database on '.$to.'</comment>');
-                if(strpos($fromServer, 'ssh')){
-                    exec('ssh '.$fromServer.' ../vendor/bin/typo3 importthis '.$from);
+                if(strpos($fromServer, '@')){
+                    exec('ssh '.$fromServer.' ../vendor/bin/typo3 database importthis '.$from);
                 }else {
                     exec('../vendor/bin/typo3 database importthis '.$from);
                 }
+
+
+
 
                 break;
         }
@@ -239,6 +247,23 @@ class DatabaseCommand extends Command
         return $executedStatements;
     }
     private function getServer($alias, $contents) {
+
+        foreach ($contents as $key => $value ){
+            foreach ($value as $key2 => $value2){
+                if($value2 == $alias) {
+                    if($value["type"] == 'foreign') {
+                        $rsyncString = $value["user"].'@'.$value["server"].' '.$value["path"];
+                    }else {
+                        $rsyncString = $value["path"];
+                    }
+                }
+            }
+        }
+
+        return $rsyncString;
+    }
+
+    private function getServerRsync($alias, $contents) {
 
         foreach ($contents as $key => $value ){
             foreach ($value as $key2 => $value2){
