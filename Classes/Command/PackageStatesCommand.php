@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
-class InstallCommand extends Command
+class PackageStatesCommand extends Command
 {
 
     /**
@@ -55,19 +55,6 @@ class InstallCommand extends Command
 
         switch ($action) {
             case "update":
-
-                $manager = $this->objectManager->get(PackageManager::class);
-
-                $availablePackages = $manager->getAvailablePackages();
-                foreach($availablePackages as $key => $package) {
-                    $manager->activatePackage($key);
-                }
-
-                var_dump($manager->getActivePackages());
-
-
-                break;
-            case "create":
                 /** @var \TYPO3\CMS\Core\Package\FailsafePackageManager $packageManager */
                 $packageManager = \TYPO3\CMS\Core\Core\Bootstrap::getInstance()->getEarlyInstance(\TYPO3\CMS\Core\Package\PackageManager::class);
 
@@ -75,10 +62,13 @@ class InstallCommand extends Command
                 $packages = $packageManager->getAvailablePackages();
                 foreach ($packages as $package) {
                     /** @var $package \TYPO3\CMS\Core\Package\PackageInterface */
-                    if ($package instanceof \TYPO3\CMS\Core\Package\PackageInterface && $package->getPackageKey() != 'sys_action') {
+                    if ($package instanceof \TYPO3\CMS\Core\Package\PackageInterface && $package->getPackageKey()) {
                         $packageManager->activatePackage($package->getPackageKey());
+                        $packagesList[] = $package->getPackageKey();
                     }
                 }
+
+                $output->writeln("<comment>Activated packages:</comment> <info>".implode(',',$packagesList)."</info>");
 
                 break;
         }

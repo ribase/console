@@ -12,8 +12,8 @@ return [
     'fileadmin' => [
         'class' => Ribase\RibaseConsole\Command\FileadminCommand::class
     ],
-    'install' => [
-        'class' => Ribase\RibaseConsole\Command\InstallCommand::class
+    'packagestates' => [
+        'class' => Ribase\RibaseConsole\Command\PackageStatesCommand::class
     ],
     'database' => [
         'class' => Ribase\RibaseConsole\Command\DatabaseCommand::class
