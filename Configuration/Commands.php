@@ -15,7 +15,16 @@ return [
     'packagestates' => [
         'class' => Ribase\RibaseConsole\Command\PackageStatesCommand::class
     ],
-    'database' => [
-        'class' => Ribase\RibaseConsole\Command\DatabaseCommand::class
+    'database:dumpthis' => [
+        'class' => Ribase\RibaseConsole\Command\DatabaseDumpThisCommand::class
+    ],
+    'database:importthis' => [
+        'class' => Ribase\RibaseConsole\Command\DatabaseImportThisCommand::class
+    ],
+    'database:sync' => [
+        'class' => Ribase\RibaseConsole\Command\DatabaseSyncCommand::class
+    ],
+    'database:dump' => [
+        'class' => Ribase\RibaseConsole\Command\DatabaseDumpCommand::class
     ]
 ];

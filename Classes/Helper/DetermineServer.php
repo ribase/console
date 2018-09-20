@@ -1,5 +1,5 @@
 <?php
-namespace Ribase\RibaseConsole\Service;
+namespace Ribase\RibaseConsole\Helper;
 
 
 use Symfony\Component\Yaml\Yaml;

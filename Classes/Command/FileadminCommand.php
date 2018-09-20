@@ -1,7 +1,7 @@
 <?php
 namespace Ribase\RibaseConsole\Command;
 
-use Ribase\RibaseConsole\Service\DetermineServer;
+use Ribase\RibaseConsole\Helper\DetermineServer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
