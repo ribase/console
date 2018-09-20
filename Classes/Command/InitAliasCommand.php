@@ -39,7 +39,8 @@ class InitAliasCommand extends Command
 
         if (file_exists($this->filename)) {
             $output->writeln('Reading existing alias file');
-            $contents = Yaml\Yaml::parseFile($this->filename);
+            $fileContents = file_get_contents($this->filename);
+            $contents = Yaml\Yaml::parse($fileContents);
         } else {
             $output->writeln('Before we start, i need to create some files');
 
@@ -99,8 +100,13 @@ class InitAliasCommand extends Command
 
 
         /* get alias path */
-        $question = new Question('Name the path to your installation eg. /var/www/emboss.ch/: ', '/var/www/emboss.ch/');
-        $aliasPath = $helper->ask($input, $output, $question);
+        if($aliasName == "local") {
+            $aliasPath = "web/";
+        }else {
+            $question = new Question('Name the path to your installation eg. /var/www/emboss.ch/web/: ', '/var/www/emboss.ch/web/');
+            $aliasPath = $helper->ask($input, $output, $question);
+        }
+
 
         /* get alias type */
         if($aliasName == 'local'){

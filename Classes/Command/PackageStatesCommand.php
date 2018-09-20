@@ -48,7 +48,7 @@ class PackageStatesCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output, array $frameworkExtensions = [], array $excludedExtensions = [], $activateDefault = false)
     {
-        $contents = Yaml::parseFile($this->filename);
+        //$contents = Yaml::parseFile($this->filename);
         $action = $input->getArgument('action');
 
         $this->objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);

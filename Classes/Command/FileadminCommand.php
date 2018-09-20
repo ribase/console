@@ -1,6 +1,7 @@
 <?php
 namespace Ribase\RibaseConsole\Command;
 
+use Ribase\RibaseConsole\Service\DetermineServer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,8 +32,8 @@ class FileadminCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
+        $serverHelper = new DetermineServer();
 
-        $contents = Yaml::parseFile($this->filename);
         $action = $input->getArgument('action');
         $from = $input->getArgument('from');
         $to = $input->getArgument('to');
@@ -41,14 +42,14 @@ class FileadminCommand extends Command
         switch ($action) {
             case "sync":
 
-                $fromServer = $this->getServer($from, $contents);
-                $toServer = $this->getServer($to, $contents);
+                $fromServer = $serverHelper->getServerRsync($from);
+                $toServer = $serverHelper->getServerRsync($to);
 
                 if(!$toServer) {
                     $output->writeln('<error>No target...well that was retard.</error>');
                     return 500;
                 }
-
+                var_dump('rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.'fileadmin/ '.$toServer.'fileadmin/');
 
                 if($delete == 'delete'){
                     exec('rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.'fileadmin/ '.$toServer.'fileadmin/');
@@ -58,7 +59,7 @@ class FileadminCommand extends Command
 
                 break;
             case "size":
-                $fromServer = $this->getServer($from, $contents);
+                $fromServer = $serverHelper->getServer($from);
 
                 if(strpos($fromServer, 'ssh')){
                     exec('ssh '.$fromServer.' du -sh fileadmin');
@@ -72,21 +73,4 @@ class FileadminCommand extends Command
         return 0;
     }
 
-
-    private function getServer($alias, $contents) {
-
-        foreach ($contents as $key => $value ){
-            foreach ($value as $key2 => $value2){
-                if($value2 == $alias) {
-                    if($value["type"] == 'foreign') {
-                        $rsyncString = $value["user"].'@'.$value["server"].':'.$value["path"];
-                    }else {
-                        $rsyncString = $value["path"];
-                    }
-                }
-            }
-        }
-
-        return $rsyncString;
-    }
 }

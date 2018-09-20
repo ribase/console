@@ -3,10 +3,10 @@ return [
     'print:something' => [
         'class' => Ribase\RibaseConsole\Command\ExampleCommand::class
     ],
-    'init:alias' => [
+    'alias:init' => [
         'class' => Ribase\RibaseConsole\Command\InitAliasCommand::class
     ],
-    'show:aliases' => [
+    'alias:show' => [
         'class' => Ribase\RibaseConsole\Command\ShowCommand::class
     ],
     'fileadmin' => [

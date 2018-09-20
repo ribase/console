@@ -5,19 +5,13 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Yaml\Yaml;
-use TYPO3\CMS\Core\Database\ConnectionPool;
+use Ribase\RibaseConsole\Service\DetermineServer;
 use TYPO3\CMS\Core\Database\Schema\SchemaMigrator;
 use TYPO3\CMS\Core\Database\Schema\SqlReader;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class DatabaseCommand extends Command
 {
-
-    /**
-     * @var string
-     */
-    protected $filename = PATH_site.'../configs/console/aliases.yml';
 
     protected function configure()
     {
@@ -37,20 +31,23 @@ class DatabaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $serverHelper = new DetermineServer();
 
-        $contents = Yaml::parseFile($this->filename);
         $action = $input->getArgument('action');
         $from = $input->getArgument('from');
         $to = $input->getArgument('to');
 
         $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
 
-        $fromServer = $this->getServer($from, $contents);
-        $toServer = $this->getServer($to, $contents);
-        $fromServerRsync = $this->getServerRsync($from, $contents);
-        $toServerRsync = $this->getServerRsync($to, $contents);
+        $fromServer = $serverHelper->getServerForCommand($from);
+        $toServer = $serverHelper->getServerForCommand($to);
+        $fromServerRsync = $serverHelper->getServerRsync($from);
+        $toServerRsync = $serverHelper->getServerRsync($to);
         $filename = str_replace('@', '', $from);
 
+        if(empty($from)){
+            $filename = "local";
+        }
         switch ($action) {
             case "migrate":
 
@@ -72,7 +69,6 @@ class DatabaseCommand extends Command
 
                 break;
             case "dumpthis":
-
                 exec('mysqldump -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump');
 
                 break;
@@ -92,12 +88,15 @@ class DatabaseCommand extends Command
                     $deleteFile = '';
                 }
 
+
                 $output->writeln('<comment>exporting database on '.$from.'</comment>');
 
+                die('ssh '.$fromServer.'vendor/bin/typo3 dumpthis"');
+
                 if(strpos($fromServer, '@')){
-                    exec('ssh '.$fromServer.'../vendor/bin/typo3 dumpthis '.$from, $out, $err);
+                    exec('ssh '.$fromServer.'vendor/bin/typo3 dumpthis"', $out, $err);
                 }else {
-                    exec('../vendor/bin/typo3 database dumpthis '.$from, $out, $err);
+                    exec('../vendor/bin/typo3 database dumpthis', $out, $err);
                 }
 
                 if($err == 1) {
@@ -117,10 +116,6 @@ class DatabaseCommand extends Command
                 }else {
                     exec('../vendor/bin/typo3 database importthis '.$from);
                 }
-
-
-
-
                 break;
         }
 
@@ -245,38 +240,5 @@ class DatabaseCommand extends Command
         $results = $schemaMigrationService->migrate($sqlStatements, $statementHashesToPerform);
 
         return $executedStatements;
-    }
-    private function getServer($alias, $contents) {
-
-        foreach ($contents as $key => $value ){
-            foreach ($value as $key2 => $value2){
-                if($value2 == $alias) {
-                    if($value["type"] == 'foreign') {
-                        $rsyncString = $value["user"].'@'.$value["server"].' '.$value["path"];
-                    }else {
-                        $rsyncString = $value["path"];
-                    }
-                }
-            }
-        }
-
-        return $rsyncString;
-    }
-
-    private function getServerRsync($alias, $contents) {
-
-        foreach ($contents as $key => $value ){
-            foreach ($value as $key2 => $value2){
-                if($value2 == $alias) {
-                    if($value["type"] == 'foreign') {
-                        $rsyncString = $value["user"].'@'.$value["server"].':'.$value["path"];
-                    }else {
-                        $rsyncString = $value["path"];
-                    }
-                }
-            }
-        }
-
-        return $rsyncString;
     }
 }
