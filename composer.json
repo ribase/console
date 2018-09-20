@@ -8,6 +8,7 @@
             "role": "Product Manager"
         }
     ],
+    "version": "0.0.2",
     "require": {
         "typo3/cms-core": "^8.7.1"
     },
