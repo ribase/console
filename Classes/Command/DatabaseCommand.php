@@ -71,7 +71,7 @@ class DatabaseCommand extends Command
                 break;
             case "dumpthis":
                 $output->writeln('<comment>Dump local database.</comment>');
-                exec('mysqldump --show-progress-size -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
+                exec('mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
 
                 break;
             case "importthis":
