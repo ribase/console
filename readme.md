@@ -2,7 +2,7 @@
 
 ## A Console for TYPO3 inspired from drush in Drupal
 
-###Commands
+### Commands
 
 - alias
     - alias:init
@@ -19,7 +19,7 @@
     
 ### Usage
 
-####Alias
+#### Alias
 I case of use please create aliases of your instances.
 Recommended usage is:
     - @local for local instances
@@ -27,11 +27,11 @@ Recommended usage is:
     - @test for foreign instances (test-branch)
     - @prod for foreign instances (master-branch)
 
-####Database
+#### Database
 
 For extended usage of database commands you will be forced to create aliases to sync between them
 
-#####Examples
+##### Examples
 To just dump your local database use
 
     - database:dumpthis $: ../vendor/bin/typo3 database:dumpthis
@@ -48,11 +48,11 @@ If you like to dump on foreign host
 
     - database:dump $: ../vendor/bin/typo3 database:dump @dev
     
-####Fileadmin
+#### Fileadmin
 
 A simple way to sync fileadmins between local or foreign hosts
 
-#####Example
+##### Example
 Sync your files
 
     - fileadmin:sync $: ../vendor/bin/typo3 fileadmin:sync @local @dev
