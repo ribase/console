@@ -9,7 +9,7 @@ return [
     'alias:show' => [
         'class' => Ribase\RibaseConsole\Command\ShowCommand::class
     ],
-    'fileadmin' => [
+    'fileadmin:sync' => [
         'class' => Ribase\RibaseConsole\Command\FileadminCommand::class
     ],
     'packagestates' => [
