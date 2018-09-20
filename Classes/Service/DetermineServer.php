@@ -26,7 +26,28 @@ class DetermineServer
                     if($value["type"] == 'foreign') {
                         $syncString = $value["user"].'@'.$value["server"].':'.$value["pathInternal"];
                     }else {
-                        $syncString = PATH_typo3.$value["pathInternal"];
+                        $syncString = PATH_site;
+                    }
+                }
+            }
+        }
+        $syncString = str_replace("web/","",$syncString);
+        return $syncString;
+    }
+    /**
+     * @param $alias
+     * @return string
+     */
+    public function getServerForCommand($alias) {
+        $contents = Yaml::parse(file_get_contents($this->filename));
+        $syncString = false;
+        foreach ($contents as $key => $value ){
+            foreach ($value as $key2 => $value2){
+                if($value2 == $alias) {
+                    if($value["type"] == 'foreign') {
+                        $syncString = $value["user"].'@'.$value["server"];
+                    }else {
+                        $syncString = "";
                     }
                 }
             }
@@ -39,23 +60,23 @@ class DetermineServer
      * @param $alias
      * @return string
      */
-    public function getServerForCommand($alias) {
+    public function getPathForCommand($alias) {
         $contents = Yaml::parse(file_get_contents($this->filename));
         $syncString = false;
         foreach ($contents as $key => $value ){
             foreach ($value as $key2 => $value2){
                 if($value2 == $alias) {
                     if($value["type"] == 'foreign') {
-                        $syncString = $value["user"].'@'.$value["server"].' " '.$value["pathInternal"];
+                        $syncString = $value["pathInternal"];
                     }else {
-                        $syncString = PATH_typo3.$value["pathInternal"];
+                        $syncString = PATH_site;
                     }
                 }
             }
         }
-        $syncString = str_replace("web/","",$syncString);
         return $syncString;
     }
+
 
     /**
      * @param $alias

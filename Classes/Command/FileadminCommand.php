@@ -49,7 +49,8 @@ class FileadminCommand extends Command
                     $output->writeln('<error>No target...well that was retard.</error>');
                     return 500;
                 }
-                var_dump('rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.'fileadmin/ '.$toServer.'fileadmin/');
+
+                $output->writeln('<comment>Sync Fileadmin from'.$from.' to '.$to.'.</comment>');
 
                 if($delete == 'delete'){
                     exec('rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.'fileadmin/ '.$toServer.'fileadmin/');

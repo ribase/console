@@ -31,6 +31,8 @@ class DatabaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
+
         $serverHelper = new DetermineServer();
 
         $action = $input->getArgument('action');
@@ -40,14 +42,13 @@ class DatabaseCommand extends Command
         $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
 
         $fromServer = $serverHelper->getServerForCommand($from);
+        $fromPath = $serverHelper->getPathForCommand($from);
         $toServer = $serverHelper->getServerForCommand($to);
+        $toPath = $serverHelper->getPathForCommand($to);
         $fromServerRsync = $serverHelper->getServerRsync($from);
         $toServerRsync = $serverHelper->getServerRsync($to);
-        $filename = str_replace('@', '', $from);
+        $filename = "database";
 
-        if(empty($from)){
-            $filename = "local";
-        }
         switch ($action) {
             case "migrate":
 
@@ -56,66 +57,56 @@ class DatabaseCommand extends Command
 
                 break;
             case "dump":
-                if(empty($fromServer)){
+                if (empty($fromServer)) {
                     $output->writeln('<error>no target set...u are a bad boy</error>');
                     return 500;
                 }
 
-                if(strpos($fromServer, '@')){
-                    exec('ssh '.$fromServer.' "mysqldump -u'.$credentials['user'].'-h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump"');
-                }else {
-                    exec('cd '.PATH_site.'; mysqldump -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump');
+                if (strpos($fromServer, '@')) {
+                    exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database dumpthis"');
+                } else {
+                    exec('cd ' . PATH_site . '; mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
                 }
 
                 break;
             case "dumpthis":
-                exec('mysqldump -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' -r '.$filename.'.dump');
+                $output->writeln('<comment>Dump local database.</comment>');
+                exec('mysqldump --show-progress-size -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
 
                 break;
             case "importthis":
-                exec('mysql -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' < '.$filename.'.dump');
+                $output->writeln('<comment>Import local database.</comment>');
+                exec('mysql -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' < ' . $filename . '.dump');
 
                 break;
             case "sync":
-                if(empty($toServer) || empty($fromServer)){
-                    $output->writeln('<error>no target set...u are a bad boy</error>');
-                    return 500;
+
+                $output->writeln('<comment>Sync database from '.$from.' to '.$to.'.</comment>');
+                $output->writeln('<comment>Start to dump database.</comment>');
+                if (strpos($from, '@')) {
+                    exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database dumpthis"');
+                } else {
+                    exec('cd ' . PATH_site . '; mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
                 }
 
-                if(strpos($fromServer, '@')) {
-                    $deleteFile = '--remove-source-files';
+
+                $output->writeln('<comment>Copy database from '.$from.' to '.$to.'.</comment>');
+                exec('rsync -chavzP --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' . $fromServer . ':' . $fromPath . 'database.dump ' . $toServer . $toPath . 'database.dump');
+
+                // if foreign, clean up!
+                if (strpos($to, '@')) {
+                    $output->writeln('<comment>Clean up on Server.</comment>');
+                    exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; rm database.dump"');
+                }
+
+
+                $output->writeln('<comment>Import database to '.$to.'.</comment>');
+                if(strpos($to, '@')){
+                    exec('ssh '.$fromServer.' "cd '.$fromPath.' ; ../vendor/bin/typo3 database importthis"');
                 }else {
-                    $deleteFile = '';
+                    exec('mysql -u'.$credentials['user'].' -h'.$credentials['host'].' -p'.$credentials['password'].' '.$credentials['dbname'].' < '.$filename.'.dump');
                 }
 
-
-                $output->writeln('<comment>exporting database on '.$from.'</comment>');
-
-                die('ssh '.$fromServer.'vendor/bin/typo3 dumpthis"');
-
-                if(strpos($fromServer, '@')){
-                    exec('ssh '.$fromServer.'vendor/bin/typo3 dumpthis"', $out, $err);
-                }else {
-                    exec('../vendor/bin/typo3 database dumpthis', $out, $err);
-                }
-
-                if($err == 1) {
-                    $output->writeln('<error>'.$out.'</error>');
-                    return 500;
-                }
-
-
-                $output->writeln('<comment>sync database from '.$from.' to '.$to.'</comment>');
-
-                exec('rsync -chavzP '.$deleteFile.' --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServerRsync.$filename.'.dump '.$toServerRsync.$filename.'.dump');
-
-
-                $output->writeln('<comment>importing database on '.$to.'</comment>');
-                if(strpos($fromServer, '@')){
-                    exec('ssh '.$fromServer.' ../vendor/bin/typo3 database importthis '.$from);
-                }else {
-                    exec('../vendor/bin/typo3 database importthis '.$from);
-                }
                 break;
         }
 
