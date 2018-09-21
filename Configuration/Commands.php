@@ -10,7 +10,10 @@ return [
         'class' => Ribase\RibaseConsole\Command\ShowCommand::class
     ],
     'fileadmin:sync' => [
-        'class' => Ribase\RibaseConsole\Command\FileadminCommand::class
+        'class' => Ribase\RibaseConsole\Command\FileadminSyncCommand::class
+    ],
+    'fileadmin:size' => [
+        'class' => Ribase\RibaseConsole\Command\FileadminSizeCommand::class
     ],
     'packagestates' => [
         'class' => Ribase\RibaseConsole\Command\PackageStatesCommand::class

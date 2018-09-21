@@ -45,10 +45,9 @@ class DatabaseSyncCommand extends Command
         $toServer = $serverHelper->getServerForCommand($to);
         $toPath = $serverHelper->getPathForCommand($to);
         $filename = "database";
-
         $output->writeln('<comment>Sync database from ' . $from . ' to ' . $to . '.</comment>');
         $output->writeln('<comment>Start to dump database.</comment>');
-        if (strpos($from, '@')) {
+        if (strpos($from, '@') === 0) {
             exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database:dumpthis"');
         } else {
             exec('cd ' . PATH_site . '; mysqldump  --verbose -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
@@ -59,14 +58,14 @@ class DatabaseSyncCommand extends Command
         exec('rsync -chavzP --progress --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' . $fromServer . ':' . $fromPath . 'database.dump ' . $toServer . $toPath . 'database.dump');
 
         // if foreign, clean up!
-        if (strpos($to, '@')) {
+        if (strpos($to, '@') === 0) {
             $output->writeln('<comment>Clean up on Server.</comment>');
             exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; rm database.dump"');
         }
 
 
         $output->writeln('<comment>Import database to ' . $to . '.</comment>');
-        if (strpos($to, '@')) {
+        if (strpos($to, '@') === 0) {
             exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database:importthis"');
         } else {
             exec('mysql --verbose -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' < ' . $filename . '.dump');
