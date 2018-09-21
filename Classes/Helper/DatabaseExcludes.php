@@ -126,10 +126,10 @@ class DatabaseExcludes
 
 
         switch($type) {
-            case "noCache":
+            case "minimal":
 
-                foreach ($this->noCacheExcludes as $value) {
-                    $includeString.= ' --ignore-table '.$database.'.'.$value;
+                foreach ($this->minimalIncludes as $value) {
+                    $includeString.= $value.' ';
                 }
                 break;
             default:

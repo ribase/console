@@ -1,6 +1,7 @@
 <?php
 namespace Ribase\RibaseConsole\Command;
 
+use Ribase\RibaseConsole\Helper\DatabaseExcludes;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +16,7 @@ class DatabaseDumpThisCommand extends Command
 
     protected function configure()
     {
-        $this->addArgument('params', InputArgument::OPTIONAL, 'set params');
+        $this->addArgument('options', InputArgument::OPTIONAL, 'available options are full, minimal, noCache');
     }
 
 
@@ -30,11 +31,27 @@ class DatabaseDumpThisCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
+        $options = $input->getArgument('options');
         $credentials = $GLOBALS['TYPO3_CONF_VARS']['DB']["Connections"]["Default"];
         $filename = "database";
 
+        if(!empty($options)) {
+            if($options === "noCache"){
+                $excludeService = new DatabaseExcludes();
+                $excludes = $excludeService->createExcludes($options,$credentials['dbname']);
+
+            }elseif($options === "minimal"){
+                $includeService = new DatabaseExcludes();
+                $includes = $includeService->createincludes($options,$credentials['dbname']);
+
+            }else {
+                $output->writeln('<error>Option not found...Exit!</error>');
+
+            }
+        }
+die('mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' '.$excludes.$includes.' -r ' . $filename . '.dump');
         $output->writeln('<comment>Dump local database.</comment>');
-        exec('mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
+        exec('mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' '.$excludes.$includes.' -r ' . $filename . '.dump');
 
         return 0;
 
