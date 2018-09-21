@@ -49,7 +49,6 @@ class DatabaseDumpThisCommand extends Command
 
             }
         }
-die('mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' '.$excludes.$includes.' -r ' . $filename . '.dump');
         $output->writeln('<comment>Dump local database.</comment>');
         exec('mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' '.$excludes.$includes.' -r ' . $filename . '.dump');
 
