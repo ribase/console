@@ -16,9 +16,8 @@ class DatabaseSyncCommand extends Command
 
     protected function configure()
     {
-        $this->addArgument('action', InputArgument::REQUIRED, 'pass a action');
-        $this->addArgument('from', InputArgument::OPTIONAL, 'set the server from');
-        $this->addArgument('to', InputArgument::OPTIONAL, 'set the server to');
+        $this->addArgument('from', InputArgument::REQUIRED, 'set the server from');
+        $this->addArgument('to', InputArgument::REQUIRED, 'set the server to');
     }
 
 
@@ -52,12 +51,12 @@ class DatabaseSyncCommand extends Command
         if (strpos($from, '@')) {
             exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database:dumpthis"');
         } else {
-            exec('cd ' . PATH_site . '; mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
+            exec('cd ' . PATH_site . '; mysqldump  --verbose -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
         }
 
 
         $output->writeln('<comment>Copy database from ' . $from . ' to ' . $to . '.</comment>');
-        exec('rsync -chavzP --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' . $fromServer . ':' . $fromPath . 'database.dump ' . $toServer . $toPath . 'database.dump');
+        exec('rsync -chavzP --progress --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' . $fromServer . ':' . $fromPath . 'database.dump ' . $toServer . $toPath . 'database.dump');
 
         // if foreign, clean up!
         if (strpos($to, '@')) {
@@ -70,7 +69,7 @@ class DatabaseSyncCommand extends Command
         if (strpos($to, '@')) {
             exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database:importthis"');
         } else {
-            exec('mysql -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' < ' . $filename . '.dump');
+            exec('mysql --verbose -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' < ' . $filename . '.dump');
         }
 
         return 0;

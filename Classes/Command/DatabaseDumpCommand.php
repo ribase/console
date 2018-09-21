@@ -30,7 +30,6 @@ class DatabaseDumpCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-
         $serverHelper = new DetermineServer();
 
         $from = $input->getArgument('from');
@@ -51,7 +50,6 @@ class DatabaseDumpCommand extends Command
         } else {
             exec('cd ' . PATH_site . '; mysqldump -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' -r ' . $filename . '.dump');
         }
-
 
         return 0;
 

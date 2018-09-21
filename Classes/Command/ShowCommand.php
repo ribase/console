@@ -29,7 +29,7 @@ class ShowCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $listType = $input->getArgument('list');
+        $listType = $input->getArgument('option');
 
         switch ($listType) {
             case "help":
@@ -37,7 +37,7 @@ class ShowCommand extends Command
                 $help = [
                     '<info>',
                     '*******************************************************',
-                    '* typo3 show:aliases              shows all aliases   *',
+                    '* typo3 alias:show                shows help          *',
                     '* typo3 show:aliases this         shows current alias *',
                     '* typo3 show:aliases help         shows help          *',
                     '*******************************************************',
@@ -48,7 +48,7 @@ class ShowCommand extends Command
 
                 break;
             case "this":
-                $contents = Yaml\Yaml::parseFile($this->filename);
+                $contents = Yaml\Yaml::parse(file_get_contents($this->filename));
 
                 foreach ($contents as $key => $value ){
                     if($value["path"] == PATH_site){
@@ -64,7 +64,7 @@ class ShowCommand extends Command
                 $output->writeln("Type 'show:aliases help' to find out more commands.");
 
                 $output->writeln('Reading existing alias file');
-                $contents = Yaml\Yaml::parseFile($this->filename);
+                $contents = Yaml\Yaml::parse(file_get_contents($this->filename));
 
                 $aliasesOutput = array();
 
