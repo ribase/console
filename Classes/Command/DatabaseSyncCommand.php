@@ -82,13 +82,13 @@ class DatabaseSyncCommand extends Command
         // if foreign, clean up!
         if (strpos($to, '@') === 0) {
             $output->writeln('<comment>Clean up on Server.</comment>');
-            exec('ssh ' . $toServer . ' "cd ' . $toPath . ' ; rm database.dump"');
+            exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; rm database.dump"');
         }
 
 
         $output->writeln('<comment>Import database to ' . $to . '.</comment>');
         if (strpos($to, '@') === 0) {
-            exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database:importthis"');
+            exec('ssh ' . $toServer . ' "cd ' . $toPath . ' ; ../vendor/bin/typo3 database:importthis"');
         } else {
             exec('mysql --verbose -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' < ' . $filename . '.dump');
         }
