@@ -16,6 +16,8 @@ class FileadminSyncCommand extends Command
     protected function configure()
     {
         $this->addArgument('from', InputArgument::REQUIRED, 'set the server from');
+        $this->addArgument('to', InputArgument::REQUIRED, 'set the server to');
+        $this->addArgument('delete', InputArgument::OPTIONAL, 'set delete');
     }
 
     /**
@@ -34,8 +36,11 @@ class FileadminSyncCommand extends Command
         $to = $input->getArgument('to');
         $delete = $input->getArgument('delete');
 
-        $fromServer = $serverHelper->getServerRsync($from);
-        $toServer = $serverHelper->getServerRsync($to);
+
+        $fromServer = $serverHelper->getServerForCommand($from);
+        $fromPath = $serverHelper->getPathForCommand($from);
+        $toServer = $serverHelper->getServerForCommand($to);
+        $toPath = $serverHelper->getPathForCommand($to);
 
         if(!$toServer) {
             $output->writeln('<error>No target...well that was retard.</error>');
@@ -45,9 +50,17 @@ class FileadminSyncCommand extends Command
         $output->writeln('<comment>Sync Fileadmin from'.$from.' to '.$to.'.</comment>');
 
         if($delete == 'delete'){
-            exec('rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.'fileadmin/ '.$toServer.'fileadmin/');
+            if (strpos($from, '@') === 0) {
+                exec('ssh -A ' . $fromServer . ' rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromPath.'fileadmin/ '.$toServer . ':' . $toPath . 'fileadmin/');
+            } else {
+                exec('rsync -chavzP --delete --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromPath.'fileadmin/ '.$toServer . ':' . $toPath . 'fileadmin/');
+            }
         }else {
-            exec('rsync -chavzP  --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromServer.'fileadmin/ '.$toServer.'fileadmin/');
+            if (strpos($from, '@') === 0) {
+                exec('ssh -A ' . $fromServer . ' rsync -chavzP  --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromPath.'fileadmin/ '.$toServer . ':' . $toPath . 'fileadmin/');
+            } else {
+                exec('rsync -chavzP  --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys '.$fromPath.'fileadmin/ '.$toServer . ':' . $toPath . 'fileadmin/');
+            }
         }
         return 0;
     }

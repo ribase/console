@@ -67,21 +67,22 @@ class DatabaseSyncCommand extends Command
             }
         }
 
-
         if (strpos($from, '@') === 0) {
             exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; ../vendor/bin/typo3 database:dumpthis"');
         } else {
             exec('cd ' . PATH_site . '; mysqldump  --verbose -u' . $credentials['user'] . ' -h' . $credentials['host'] . ' -p' . $credentials['password'] . ' ' . $credentials['dbname'] . ' '.$excludes.$includes.' -r ' . $filename . '.dump');
         }
 
-
         $output->writeln('<comment>Copy database from ' . $from . ' to ' . $to . '.</comment>');
-        exec('rsync -chavzP --progress --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' . $fromServer . ':' . $fromPath . 'database.dump ' . $toServer . $toPath . 'database.dump');
-
+        if (strpos($from, '@') === 0) {
+            exec('ssh -A ' . $fromServer . ' rsync -chavzP --progress --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' . $fromPath . 'database.dump ' . $toServer . ':' . $toPath . 'database.dump');
+        }else {
+            exec('rsync -chavzP --progress --stats --exclude=_processed_ --exclude=_temp_ --exclude=log --exclude=sys ' .$fromPath . 'database.dump ' . $toServer . ':' . $toPath . 'database.dump');
+        }
         // if foreign, clean up!
         if (strpos($to, '@') === 0) {
             $output->writeln('<comment>Clean up on Server.</comment>');
-            exec('ssh ' . $fromServer . ' "cd ' . $fromPath . ' ; rm database.dump"');
+            exec('ssh ' . $toServer . ' "cd ' . $toPath . ' ; rm database.dump"');
         }
 
 
